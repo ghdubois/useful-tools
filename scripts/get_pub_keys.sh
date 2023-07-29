@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # GitHub username
-github_user="example01"
+github_user=$1
 
 # Check if ssh-import-id tool is available
 if command -v ssh-import-id >/dev/null 2>&1; then
