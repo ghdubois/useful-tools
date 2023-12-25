@@ -4,10 +4,10 @@ echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4
 
 apt-get update &&
 
-WAZUH_MANAGER="192.168.5.23" apt-get install wazuh-agent
+WAZUH_MANAGER="192.168.5.23" apt-get install wazuh-agent &&
 
-systemctl daemon-reload
-systemctl enable wazuh-agent
-systemctl start wazuh-agent
+systemctl daemon-reload &&
+systemctl enable wazuh-agent &&
+systemctl start wazuh-agent &&
 
 echo "wazuh-agent hold" | dpkg --set-selections
