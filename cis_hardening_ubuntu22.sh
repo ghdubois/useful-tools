@@ -325,12 +325,12 @@ check_var_partition() {
     fi
 }
 
-# # Function to set correct mount options for /var
-# configure_var_partition() {
-#     echo "<device> /var <fstype> defaults,rw,nosuid,nodev,relatime 0 0" >> /etc/fstab
-#     mount -o remount /var
-#     echo "Configured mount options for /var."
-# }
+# Function to set correct mount options for /var
+configure_var_partition() {
+    echo "<device> /var <fstype> defaults,rw,nosuid,nodev,relatime 0 0" >> /etc/fstab
+    mount -o remount /var
+    echo "Configured mount options for /var."
+}
 
 # Function to ensure /var/tmp is a separate partition
 check_var_tmp_partition() {
@@ -341,14 +341,12 @@ check_var_tmp_partition() {
     fi
 }
 
-# # Function to set correct mount options for /var/tmp
-# configure_var_tmp_partition() {
-#     echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
-#     mount -o remount /var/tmp
-#     echo "Configured mount options for /var/tmp."
-# }
-
-
+# Function to set correct mount options for /var/tmp
+configure_var_tmp_partition() {
+    echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/tmp
+    echo "Configured mount options for /var/tmp."
+}
 
 # Functions for /var/tmp partition
 check_var_tmp_partition_options() {
@@ -359,11 +357,11 @@ check_var_tmp_partition_options() {
     fi
 }
 
-# configure_var_tmp_partition_options() {
-#     echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
-#     mount -o remount /var/tmp
-#     echo "Configured mount options for /var/tmp."
-# }
+configure_var_tmp_partition_options() {
+    echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/tmp
+    echo "Configured mount options for /var/tmp."
+}
 
 # Functions for /var/log partition
 check_var_log_partition_options() {
@@ -374,11 +372,11 @@ check_var_log_partition_options() {
     fi
 }
 
-# configure_var_log_partition_options() {
-#     echo "<device> /var/log <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
-#     mount -o remount /var/log
-#     echo "Configured mount options for /var/log."
-# }
+configure_var_log_partition_options() {
+    echo "<device> /var/log <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/log
+    echo "Configured mount options for /var/log."
+}
 
 # Functions for /var/log/audit partition
 check_var_log_audit_partition_options() {
@@ -389,11 +387,11 @@ check_var_log_audit_partition_options() {
     fi
 }
 
-# configure_var_log_audit_partition_options() {
-#     echo "<device> /var/log/audit <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
-#     mount -o remount /var/log/audit
-#     echo "Configured mount options for /var/log/audit."
-# }
+configure_var_log_audit_partition_options() {
+    echo "<device> /var/log/audit <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/log/audit
+    echo "Configured mount options for /var/log/audit."
+}
 
 # Function to configure rsyslog default file permissions
 configure_rsyslog_permissions() {
@@ -569,25 +567,25 @@ main() {
         install_system_integrity_monitoring
     fi
 
-    # Separate partitions
-    if ! check_tmp_partition; then
-        configure_tmp_partition
-    fi
-    if ! check_var_partition; then
-        configure_var_partition
-    fi
-    if ! check_var_tmp_partition; then
-        configure_var_tmp_partition
-    fi
-    if ! check_var_tmp_partition_options; then
-        configure_var_tmp_partition_options
-    fi
-    if ! check_var_log_partition_options; then
-        configure_var_log_partition_options
-    fi
-    if ! check_var_log_audit_partition_options; then
-        configure_var_log_audit_partition_options
-    fi
+    # # Separate partitions
+    # if ! check_tmp_partition; then
+    #     configure_tmp_partition
+    # fi
+    # if ! check_var_partition; then
+    #     configure_var_partition
+    # fi
+    # if ! check_var_tmp_partition; then
+    #     configure_var_tmp_partition
+    # fi
+    # if ! check_var_tmp_partition_options; then
+    #     configure_var_tmp_partition_options
+    # fi
+    # if ! check_var_log_partition_options; then
+    #     configure_var_log_partition_options
+    # fi
+    # if ! check_var_log_audit_partition_options; then
+    #     configure_var_log_audit_partition_options
+    # fi
 
     # Rsyslog permissions
     if ! check_rsyslog_permissions; then
