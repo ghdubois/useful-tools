@@ -116,6 +116,53 @@ disable_unnecessary_services() {
 }
 
 
+# Check for secure file permissions on /etc/shadow
+check_shadow_file_permissions() {
+    if [ "$(stat -c %a /etc/shadow)" == "000" ]; then
+        echo "/etc/shadow permissions are secure."
+    else
+        echo "/etc/shadow permissions are not secure."
+    fi
+}
+
+# Set secure file permissions on /etc/shadow
+set_shadow_file_permissions() {
+    chmod 000 /etc/shadow
+    echo "Set secure permissions on /etc/shadow."
+}
+
+# Check if system is using the latest patches
+check_system_patches() {
+    if apt-get -s upgrade | grep -q '0 upgraded, 0 newly installed, 0 to remove'; then
+        echo "System is up to date."
+    else
+        echo "System is not up to date."
+    fi
+}
+
+# Update system patches
+update_system_patches() {
+    apt-get update && apt-get upgrade -y
+    echo "System updated with latest patches."
+}
+
+# Check for noexec option on temporary directories
+check_noexec_on_tmp() {
+    if mount | grep -q '/tmp.*noexec'; then
+        echo "/tmp is mounted with noexec."
+    else
+        echo "/tmp is not mounted with noexec."
+    fi
+}
+
+# Set noexec option on temporary directories
+set_noexec_on_tmp() {
+    mount -o remount,noexec /tmp
+    echo "Mounted /tmp with noexec."
+}
+
+
+
 # Main function
 main() {
     check_ssh_root_login
@@ -134,6 +181,12 @@ main() {
     enable_audit_events
     check_unnecessary_services
     disable_unnecessary_services
+    check_shadow_file_permissions
+    set_shadow_file_permissions
+    check_system_patches
+    update_system_patches
+    check_noexec_on_tmp
+    set_noexec_on_tmp
 }
 
 # Execute main function
