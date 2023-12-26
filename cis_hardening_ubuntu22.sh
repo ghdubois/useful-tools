@@ -622,10 +622,11 @@ main() {
         configure_password_policies
     fi
 
-    # File permissions
-    if ! check_file_permissions; then
-        configure_file_permissions
-    fi
+    # # File permissions
+    # if ! check_file_permissions; then
+    #     configure_file_permissions
+    # fi
+    configure_file_permissions
     
 
     # check_ssh_root_login
