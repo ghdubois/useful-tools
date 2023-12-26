@@ -349,6 +349,52 @@ configure_var_tmp_partition() {
 }
 
 
+
+# Functions for /var/tmp partition
+check_var_tmp_partition_options() {
+    if findmnt --kernel /var/tmp | grep -q 'nosuid' && findmnt --kernel /var/tmp | grep -q 'nodev' && findmnt --kernel /var/tmp | grep -q 'noexec'; then
+        echo "/var/tmp partition options are correctly set."
+    else
+        echo "/var/tmp partition options are not correctly set."
+    fi
+}
+
+configure_var_tmp_partition_options() {
+    echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/tmp
+    echo "Configured mount options for /var/tmp."
+}
+
+# Functions for /var/log partition
+check_var_log_partition_options() {
+    if findmnt --kernel /var/log | grep -q 'nosuid' && findmnt --kernel /var/log | grep -q 'nodev' && findmnt --kernel /var/log | grep -q 'noexec'; then
+        echo "/var/log partition options are correctly set."
+    else
+        echo "/var/log partition options are not correctly set."
+    fi
+}
+
+configure_var_log_partition_options() {
+    echo "<device> /var/log <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/log
+    echo "Configured mount options for /var/log."
+}
+
+# Functions for /var/log/audit partition
+check_var_log_audit_partition_options() {
+    if findmnt --kernel /var/log/audit | grep -q 'nosuid' && findmnt --kernel /var/log/audit | grep -q 'nodev' && findmnt --kernel /var/log/audit | grep -q 'noexec'; then
+        echo "/var/log/audit partition options are correctly set."
+    else
+        echo "/var/log/audit partition options are not correctly set."
+    fi
+}
+
+configure_var_log_audit_partition_options() {
+    echo "<device> /var/log/audit <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/log/audit
+    echo "Configured mount options for /var/log/audit."
+}
+
 # Main function
 main() {
     check_ssh_root_login
@@ -395,6 +441,12 @@ main() {
     configure_var_partition
     check_var_tmp_partition
     configure_var_tmp_partition
+    check_var_tmp_partition_options
+    configure_var_tmp_partition_options
+    check_var_log_partition_options
+    configure_var_log_partition_options
+    check_var_log_audit_partition_options
+    configure_var_log_audit_partition_options
 }
 
 # Execute main function
