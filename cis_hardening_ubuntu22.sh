@@ -233,6 +233,73 @@ enable_automatic_updates() {
     echo "Automatic updates enabled."
 }
 
+
+# Check for SSH protocol version
+check_ssh_protocol_version() {
+    if grep -q "^Protocol 2" /etc/ssh/sshd_config; then
+        echo "SSH Protocol version 2 is in use."
+    else
+        echo "SSH Protocol version is not set to 2."
+    fi
+}
+
+# Set SSH to use Protocol version 2
+set_ssh_protocol_version() {
+    sed -i 's/^#Protocol.*/Protocol 2/' /etc/ssh/sshd_config
+    systemctl restart sshd
+    echo "SSH set to use Protocol version 2."
+}
+
+# Check for sysctl configurations
+check_sysctl_configurations() {
+    if sysctl net.ipv4.conf.all.rp_filter | grep -q "1"; then
+        echo "Reverse path filtering is enabled."
+    else
+        echo "Reverse path filtering is not enabled."
+    fi
+}
+
+# Apply sysctl configurations
+apply_sysctl_configurations() {
+    echo "net.ipv4.conf.all.rp_filter=1" >> /etc/sysctl.conf
+    sysctl -p
+    echo "Applied reverse path filtering configuration."
+}
+
+# Check for presence of antivirus software
+check_antivirus_software() {
+    if command -v clamav > /dev/null; then
+        echo "ClamAV antivirus software is installed."
+    else
+        echo "ClamAV antivirus software is not installed."
+    fi
+}
+
+# Install antivirus software (ClamAV)
+install_antivirus_software() {
+    apt-get install clamav clamav-daemon -y
+    systemctl start clamav-freshclam
+    systemctl enable clamav-freshclam
+    echo "ClamAV antivirus software installed and enabled."
+}
+
+# Check for system integrity monitoring tool
+check_system_integrity_monitoring() {
+    if command -v aide > /dev/null; then
+        echo "AIDE system integrity monitoring tool is installed."
+    else
+        echo "AIDE system integrity monitoring tool is not installed."
+    fi
+}
+
+# Install system integrity monitoring tool (AIDE)
+install_system_integrity_monitoring() {
+    apt-get install aide aide-common -y
+    aideinit
+    echo "AIDE system integrity monitoring tool installed."
+}
+
+
 # Main function
 main() {
     check_ssh_root_login
@@ -265,6 +332,14 @@ main() {
     secure_plex_permissions_ownership
     check_automatic_updates
     enable_automatic_updates
+    check_ssh_protocol_version
+    set_ssh_protocol_version
+    check_sysctl_configurations
+    apply_sysctl_configurations
+    check_antivirus_software
+    install_antivirus_software
+    check_system_integrity_monitoring
+    install_system_integrity_monitoring
 }
 
 # Execute main function
