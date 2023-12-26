@@ -395,6 +395,83 @@ configure_var_log_audit_partition_options() {
     echo "Configured mount options for /var/log/audit."
 }
 
+# Function to configure rsyslog default file permissions
+configure_rsyslog_permissions() {
+    echo "\$FileCreateMode 0640" >> /etc/rsyslog.conf
+    systemctl restart rsyslog
+    echo "Configured rsyslog default file permissions."
+}
+
+# Function to set permissions on cron files
+set_cron_permissions() {
+    chown root:root /etc/crontab
+    chmod og-rwx /etc/crontab
+    chown root:root /etc/cron.hourly
+    chmod og-rwx /etc/cron.hourly
+    chown root:root /etc/cron.daily
+    chmod og-rwx /etc/cron.daily
+    chown root:root /etc/cron.weekly
+    chmod og-rwx /etc/cron.weekly
+    chown root:root /etc/cron.monthly
+    chmod og-rwx /etc/cron.monthly
+    chown root:root /etc/cron.d
+    chmod og-rwx /etc/cron.d
+    echo "Set permissions on cron files."
+}
+
+# Function to restrict access to the su command
+restrict_su_command() {
+    groupadd sugroup
+    echo "auth required pam_wheel.so use_uid group=sugroup" >> /etc/pam.d/su
+    echo "Restricted access to the su command."
+}
+
+# Function to configure SSH settings
+configure_ssh_settings() {
+    sed -i '/^PermitRootLogin/s/^.*$/PermitRootLogin no/' /etc/ssh/sshd_config
+    sed -i '/^X11Forwarding/s/^.*$/X11Forwarding no/' /etc/ssh/sshd_config
+    sed -i '/^MaxAuthTries/s/^.*$/MaxAuthTries 4/' /etc/ssh/sshd_config
+    sed -i '/^MaxStartups/s/^.*$/MaxStartups 10:30:60/' /etc/ssh/sshd_config
+    sed -i '/^LoginGraceTime/s/^.*$/LoginGraceTime 60/' /etc/ssh/sshd_config
+    systemctl restart sshd
+    echo "Configured SSH settings."
+}
+
+# Function to set permissions on sshd_config
+set_sshd_config_permissions() {
+    chown root:root /etc/ssh/sshd_config
+    chmod og-rwx /etc/ssh/sshd_config
+    echo "Set permissions on sshd_config."
+}
+
+# Function to configure sudo log file
+configure_sudo_log_file() {
+    echo "Defaults logfile='/var/log/sudo.log'" >> /etc/sudoers
+    echo "Configured sudo log file."
+}
+
+# Function to configure password policies
+configure_password_policies() {
+    apt install libpam-pwquality
+    echo "minlen = 14" >> /etc/security/pwquality.conf
+    echo "minclass = 4" >> /etc/security/pwquality.conf
+    echo "PASS_MIN_DAYS 1" >> /etc/login.defs
+    echo "PASS_MAX_DAYS 365" >> /etc/login.defs
+    useradd -D -f 30
+    echo "Configured password policies."
+}
+
+# Function to configure file permissions
+configure_file_permissions() {
+    chown root:root /etc/shadow
+    chmod u-x,g-wx,o-rwx /etc/shadow
+    chown root:root /etc/shadow-
+    chmod u-x,g-wx,o-rwx /etc/shadow-
+    echo "Configured file permissions."
+}
+
+
+
 # Main function
 main() {
     check_ssh_root_login
@@ -447,6 +524,15 @@ main() {
     configure_var_log_partition_options
     check_var_log_audit_partition_options
     configure_var_log_audit_partition_options
+    configure_rsyslog_permissions
+    set_cron_permissions
+    restrict_su_command
+    configure_ssh_settings
+    set_sshd_config_permissions
+    configure_sudo_log_file
+    configure_password_policies
+    configure_file_permissions
+
 }
 
 # Execute main function
