@@ -300,6 +300,55 @@ install_system_integrity_monitoring() {
 }
 
 
+# Function to ensure /tmp is a separate partition
+check_tmp_partition() {
+    if findmnt --kernel /tmp | grep -q '/tmp'; then
+        echo "/tmp is mounted as a separate partition."
+    else
+        echo "/tmp is not a separate partition."
+    fi
+}
+
+# Function to set correct mount options for /tmp
+configure_tmp_partition() {
+    echo "tmpfs /tmp tmpfs defaults,rw,nosuid,nodev,noexec,relatime,size=2G 0 0" >> /etc/fstab
+    mount -o remount /tmp
+    echo "Configured mount options for /tmp."
+}
+
+# Function to ensure /var is a separate partition
+check_var_partition() {
+    if findmnt --kernel /var | grep -q '/var'; then
+        echo "/var is mounted as a separate partition."
+    else
+        echo "/var is not a separate partition."
+    fi
+}
+
+# Function to set correct mount options for /var
+configure_var_partition() {
+    echo "<device> /var <fstype> defaults,rw,nosuid,nodev,relatime 0 0" >> /etc/fstab
+    mount -o remount /var
+    echo "Configured mount options for /var."
+}
+
+# Function to ensure /var/tmp is a separate partition
+check_var_tmp_partition() {
+    if findmnt --kernel /var/tmp | grep -q '/var/tmp'; then
+        echo "/var/tmp is mounted as a separate partition."
+    else
+        echo "/var/tmp is not a separate partition."
+    fi
+}
+
+# Function to set correct mount options for /var/tmp
+configure_var_tmp_partition() {
+    echo "<device> /var/tmp <fstype> defaults,rw,nosuid,nodev,noexec,relatime 0 0" >> /etc/fstab
+    mount -o remount /var/tmp
+    echo "Configured mount options for /var/tmp."
+}
+
+
 # Main function
 main() {
     check_ssh_root_login
@@ -340,6 +389,12 @@ main() {
     install_antivirus_software
     check_system_integrity_monitoring
     install_system_integrity_monitoring
+    check_tmp_partition
+    configure_tmp_partition
+    check_var_partition
+    configure_var_partition
+    check_var_tmp_partition
+    configure_var_tmp_partition
 }
 
 # Execute main function
