@@ -162,6 +162,76 @@ set_noexec_on_tmp() {
 }
 
 
+# Check if firewall is configured and active
+check_firewall_configuration() {
+    if ufw status | grep -q 'Status: active'; then
+        echo "Firewall is active."
+    else
+        echo "Firewall is not active."
+    fi
+}
+
+# Configure and enable the firewall
+configure_firewall() {
+    ufw allow 32400/tcp
+    ufw enable
+    echo "Firewall configured and enabled for Plex (port 32400)."
+}
+
+# Check if SELinux is enforcing
+check_selinux_status() {
+    if getenforce | grep -q 'Enforcing'; then
+        echo "SELinux is in enforcing mode."
+    else
+        echo "SELinux is not in enforcing mode."
+    fi
+}
+
+# Set SELinux to enforcing mode
+set_selinux_enforcing() {
+    setenforce 1
+    sed -i 's/^SELINUX=.*/SELINUX=enforcing/' /etc/selinux/config
+    echo "SELinux set to enforcing mode."
+}
+
+# Check for Plex-related secure permissions and ownership
+check_plex_permissions_ownership() {
+    if [ -d "/var/lib/plexmediaserver" ]; then
+        plex_permissions=$(stat -c %a /var/lib/plexmediaserver)
+        plex_owner=$(stat -c %U /var/lib/plexmediaserver)
+        if [ "$plex_permissions" == "700" ] && [ "$plex_owner" == "plex" ]; then
+            echo "Plex directory permissions and ownership are secure."
+        else
+            echo "Plex directory permissions and ownership are not secure."
+        fi
+    else
+        echo "Plex directory not found."
+    fi
+}
+
+# Set secure permissions and ownership for Plex
+secure_plex_permissions_ownership() {
+    mkdir -p /var/lib/plexmediaserver
+    chown plex:plex /var/lib/plexmediaserver
+    chmod 700 /var/lib/plexmediaserver
+    echo "Set secure permissions and ownership for Plex directory."
+}
+
+# Check if automatic updates are enabled
+check_automatic_updates() {
+    if [ -f /etc/apt/apt.conf.d/20auto-upgrades ]; then
+        echo "Automatic updates are enabled."
+    else
+        echo "Automatic updates are not enabled."
+    fi
+}
+
+# Enable automatic updates
+enable_automatic_updates() {
+    apt-get install unattended-upgrades
+    dpkg-reconfigure -plow unattended-upgrades
+    echo "Automatic updates enabled."
+}
 
 # Main function
 main() {
@@ -187,6 +257,14 @@ main() {
     update_system_patches
     check_noexec_on_tmp
     set_noexec_on_tmp
+    check_firewall_configuration
+    configure_firewall
+    check_selinux_status
+    set_selinux_enforcing
+    check_plex_permissions_ownership
+    secure_plex_permissions_ownership
+    check_automatic_updates
+    enable_automatic_updates
 }
 
 # Execute main function
