@@ -115,21 +115,40 @@ disable_unnecessary_services() {
     echo "Autofs service disabled."
 }
 
-
 # Check for secure file permissions on /etc/shadow
 check_shadow_file_permissions() {
-    if [ "$(stat -c %a /etc/shadow)" == "000" ]; then
+    local perms
+    perms=$(stat -c %a /etc/shadow)
+    if [ "$perms" == "640" ] || [ "$perms" == "600" ]; then
         echo "/etc/shadow permissions are secure."
+        return 0
     else
         echo "/etc/shadow permissions are not secure."
+        return 1
     fi
 }
 
 # Set secure file permissions on /etc/shadow
 set_shadow_file_permissions() {
-    chmod 000 /etc/shadow
-    echo "Set secure permissions on /etc/shadow."
+    chmod 600 /etc/shadow
+    echo "Set secure permissions (600) on /etc/shadow."
 }
+
+
+# # Check for secure file permissions on /etc/shadow
+# check_shadow_file_permissions() {
+#     if [ "$(stat -c %a /etc/shadow)" == "000" ]; then
+#         echo "/etc/shadow permissions are secure."
+#     else
+#         echo "/etc/shadow permissions are not secure."
+#     fi
+# }
+
+# # Set secure file permissions on /etc/shadow
+# set_shadow_file_permissions() {
+#     chmod 000 /etc/shadow
+#     echo "Set secure permissions on /etc/shadow."
+# }
 
 # Check if system is using the latest patches
 check_system_patches() {
