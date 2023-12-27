@@ -393,11 +393,19 @@ configure_var_log_audit_partition_options() {
     echo "Configured mount options for /var/log/audit."
 }
 
+check_rsyslog_permissions() {
+    grep -q "\$FileCreateMode 0640" /etc/rsyslog.conf
+}
+
 # Function to configure rsyslog default file permissions
 configure_rsyslog_permissions() {
     echo "\$FileCreateMode 0640" >> /etc/rsyslog.conf
     systemctl restart rsyslog
     echo "Configured rsyslog default file permissions."
+}
+
+check_cron_permissions() {
+    ls -l /etc/crontab /etc/cron.* | grep -q "root root"
 }
 
 # Function to set permissions on cron files
@@ -417,11 +425,23 @@ set_cron_permissions() {
     echo "Set permissions on cron files."
 }
 
+check_su_command_restriction() {
+    grep -q "auth required pam_wheel.so use_uid group=sugroup" /etc/pam.d/su
+}
+
 # Function to restrict access to the su command
 restrict_su_command() {
     groupadd sugroup
     echo "auth required pam_wheel.so use_uid group=sugroup" >> /etc/pam.d/su
     echo "Restricted access to the su command."
+}
+
+check_ssh_settings() {
+    grep -q "PermitRootLogin no" /etc/ssh/sshd_config &&
+    grep -q "X11Forwarding no" /etc/ssh/sshd_config &&
+    grep -q "MaxAuthTries 4" /etc/ssh/sshd_config &&
+    grep -q "MaxStartups 10:30:60" /etc/ssh/sshd_config &&
+    grep -q "LoginGraceTime 60" /etc/ssh/sshd_config
 }
 
 # Function to configure SSH settings
@@ -435,6 +455,10 @@ configure_ssh_settings() {
     echo "Configured SSH settings."
 }
 
+check_sshd_config_permissions() {
+    ls -l /etc/ssh/sshd_config | grep -q "root root"
+}
+
 # Function to set permissions on sshd_config
 set_sshd_config_permissions() {
     chown root:root /etc/ssh/sshd_config
@@ -442,10 +466,20 @@ set_sshd_config_permissions() {
     echo "Set permissions on sshd_config."
 }
 
+check_sudo_log_file() {
+    grep -q "Defaults logfile='/var/log/sudo.log'" /etc/sudoers
+}
+
 # Function to configure sudo log file
 configure_sudo_log_file() {
     echo "Defaults logfile='/var/log/sudo.log'" >> /etc/sudoers
     echo "Configured sudo log file."
+}
+check_password_policies() {
+    grep -q "minlen = 14" /etc/security/pwquality.conf &&
+    grep -q "minclass = 4" /etc/security/pwquality.conf &&
+    grep -q "PASS_MIN_DAYS 1" /etc/login.defs &&
+    grep -q "PASS_MAX_DAYS 365" /etc/login.defs
 }
 
 # Function to configure password policies
@@ -459,6 +493,10 @@ configure_password_policies() {
     echo "Configured password policies."
 }
 
+check_file_permissions() {
+    ls -l /etc/shadow /etc/shadow- | grep -q "root root"
+}
+
 # Function to configure file permissions
 configure_file_permissions() {
     chown root:root /etc/shadow
@@ -467,226 +505,223 @@ configure_file_permissions() {
     chmod u-x,g-wx,o-rwx /etc/shadow-
     echo "Configured file permissions."
 }
-
-
-
 # Main function
 main() {
-    # # SSH root login
-    # if ! check_ssh_root_login; then
-    #     implement_ssh_root_login
+    # SSH root login
+    if ! check_ssh_root_login; then
+        implement_ssh_root_login
+    fi
+
+    # Unnecessary accounts
+    if check_unnecessary_accounts; then
+        remove_unnecessary_accounts
+    fi
+
+    # Password expiration policy
+    if ! check_password_expiration_policy; then
+        implement_password_expiration_policy
+    fi
+
+    # Ungrouped files
+    if check_ungrouped_files; then
+        fix_ungrouped_files
+    fi
+
+    # Unowned files
+    if check_unowned_files; then
+        fix_unowned_files
+    fi
+
+    # World writable files
+    if check_world_writable_files; then
+        fix_world_writable_files
+    fi
+
+    # Audit events
+    if ! check_audit_events; then
+        enable_audit_events
+    fi
+
+    # Unnecessary services
+    if check_unnecessary_services; then
+        disable_unnecessary_services
+    fi
+
+    # /etc/shadow permissions
+    if ! check_shadow_file_permissions; then
+        set_shadow_file_permissions
+    fi
+
+    # System patches
+    if ! check_system_patches; then
+        update_system_patches
+    fi
+
+    # Noexec on /tmp
+    if ! check_noexec_on_tmp; then
+        set_noexec_on_tmp
+    fi
+
+    # Firewall configuration
+    if ! check_firewall_configuration; then
+        configure_firewall
+    fi
+
+    # SELinux status
+    if ! check_selinux_status; then
+        set_selinux_enforcing
+    fi
+
+    # Plex permissions and ownership
+    if ! check_plex_permissions_ownership; then
+        secure_plex_permissions_ownership
+    fi
+
+    # Automatic updates
+    if ! check_automatic_updates; then
+        enable_automatic_updates
+    fi
+
+    # SSH protocol version
+    if ! check_ssh_protocol_version; then
+        set_ssh_protocol_version
+    fi
+
+    # Sysctl configurations
+    if ! check_sysctl_configurations; then
+        apply_sysctl_configurations
+    fi
+
+    # Antivirus software
+    if ! check_antivirus_software; then
+        install_antivirus_software
+    fi
+
+    # System integrity monitoring
+    if ! check_system_integrity_monitoring; then
+        install_system_integrity_monitoring
+    fi
+
+    # # Separate partitions
+    # if ! check_tmp_partition; then
+    #     configure_tmp_partition
+    # fi
+    # if ! check_var_partition; then
+    #     configure_var_partition
+    # fi
+    # if ! check_var_tmp_partition; then
+    #     configure_var_tmp_partition
+    # fi
+    # if ! check_var_tmp_partition_options; then
+    #     configure_var_tmp_partition_options
+    # fi
+    # if ! check_var_log_partition_options; then
+    #     configure_var_log_partition_options
+    # fi
+    # if ! check_var_log_audit_partition_options; then
+    #     configure_var_log_audit_partition_options
     # fi
 
-    # # Unnecessary accounts
-    # if check_unnecessary_accounts; then
-    #     remove_unnecessary_accounts
-    # fi
+    # Rsyslog permissions
+    if ! check_rsyslog_permissions; then
+        configure_rsyslog_permissions
+    fi
 
-    # # Password expiration policy
-    # if ! check_password_expiration_policy; then
-    #     implement_password_expiration_policy
-    # fi
+    # Cron permissions
+    if ! check_cron_permissions; then
+        set_cron_permissions
+    fi
 
-    # # Ungrouped files
-    # if check_ungrouped_files; then
-    #     fix_ungrouped_files
-    # fi
+    # Restrict su command
+    if ! check_su_command_restriction; then
+        restrict_su_command
+    fi
 
-    # # Unowned files
-    # if check_unowned_files; then
-    #     fix_unowned_files
-    # fi
+    # SSH settings
+    if ! check_ssh_settings; then
+        configure_ssh_settings
+    fi
 
-    # # World writable files
-    # if check_world_writable_files; then
-    #     fix_world_writable_files
-    # fi
+    # SSHd config permissions
+    if ! check_sshd_config_permissions; then
+        set_sshd_config_permissions
+    fi
 
-    # # Audit events
-    # if ! check_audit_events; then
-    #     enable_audit_events
-    # fi
+    # Sudo log file
+    if ! check_sudo_log_file; then
+        configure_sudo_log_file
+    fi
 
-    # # Unnecessary services
-    # if check_unnecessary_services; then
-    #     disable_unnecessary_services
-    # fi
+    # Password policies
+    if ! check_password_policies; then
+        configure_password_policies
+    fi
 
-    # # /etc/shadow permissions
-    # if ! check_shadow_file_permissions; then
-    #     set_shadow_file_permissions
-    # fi
-
-    # # System patches
-    # if ! check_system_patches; then
-    #     update_system_patches
-    # fi
-
-    # # Noexec on /tmp
-    # if ! check_noexec_on_tmp; then
-    #     set_noexec_on_tmp
-    # fi
-
-    # # Firewall configuration
-    # if ! check_firewall_configuration; then
-    #     configure_firewall
-    # fi
-
-    # # SELinux status
-    # if ! check_selinux_status; then
-    #     set_selinux_enforcing
-    # fi
-
-    # # Plex permissions and ownership
-    # if ! check_plex_permissions_ownership; then
-    #     secure_plex_permissions_ownership
-    # fi
-
-    # # Automatic updates
-    # if ! check_automatic_updates; then
-    #     enable_automatic_updates
-    # fi
-
-    # # SSH protocol version
-    # if ! check_ssh_protocol_version; then
-    #     set_ssh_protocol_version
-    # fi
-
-    # # Sysctl configurations
-    # if ! check_sysctl_configurations; then
-    #     apply_sysctl_configurations
-    # fi
-
-    # # Antivirus software
-    # if ! check_antivirus_software; then
-    #     install_antivirus_software
-    # fi
-
-    # # System integrity monitoring
-    # if ! check_system_integrity_monitoring; then
-    #     install_system_integrity_monitoring
-    # fi
-
-    # # # Separate partitions
-    # # if ! check_tmp_partition; then
-    # #     configure_tmp_partition
-    # # fi
-    # # if ! check_var_partition; then
-    # #     configure_var_partition
-    # # fi
-    # # if ! check_var_tmp_partition; then
-    # #     configure_var_tmp_partition
-    # # fi
-    # # if ! check_var_tmp_partition_options; then
-    # #     configure_var_tmp_partition_options
-    # # fi
-    # # if ! check_var_log_partition_options; then
-    # #     configure_var_log_partition_options
-    # # fi
-    # # if ! check_var_log_audit_partition_options; then
-    # #     configure_var_log_audit_partition_options
-    # # fi
-
-    # # Rsyslog permissions
-    # if ! check_rsyslog_permissions; then
-    #     configure_rsyslog_permissions
-    # fi
-
-    # # Cron permissions
-    # if ! check_cron_permissions; then
-    #     set_cron_permissions
-    # fi
-
-    # # Restrict su command
-    # if ! check_su_command_restriction; then
-    #     restrict_su_command
-    # fi
-
-    # # SSH settings
-    # if ! check_ssh_settings; then
-    #     configure_ssh_settings
-    # fi
-
-    # # SSHd config permissions
-    # if ! check_sshd_config_permissions; then
-    #     set_sshd_config_permissions
-    # fi
-
-    # # Sudo log file
-    # if ! check_sudo_log_file; then
-    #     configure_sudo_log_file
-    # fi
-
-    # # Password policies
-    # if ! check_password_policies; then
-    #     configure_password_policies
-    # fi
-
-    # # # File permissions
-    # # if ! check_file_permissions; then
-    # #     configure_file_permissions
-    # # fi
-    # configure_file_permissions
+    # File permissions
+    if ! check_file_permissions; then
+        configure_file_permissions
+    fi
+    
     
 
-    check_ssh_root_login
-    implement_ssh_root_login
-    check_unnecessary_accounts
-    remove_unnecessary_accounts
-    check_password_expiration_policy
-    implement_password_expiration_policy
-    check_ungrouped_files
-    fix_ungrouped_files
-    check_unowned_files
-    fix_unowned_files
-    check_world_writable_files
-    fix_world_writable_files
-    check_audit_events
-    enable_audit_events
-    check_unnecessary_services
-    disable_unnecessary_services
-    check_shadow_file_permissions
-    set_shadow_file_permissions
-    check_system_patches
-    update_system_patches
-    check_noexec_on_tmp
-    set_noexec_on_tmp
-    check_firewall_configuration
-    configure_firewall
-    check_selinux_status
-    set_selinux_enforcing
-    check_plex_permissions_ownership
-    secure_plex_permissions_ownership
-    check_automatic_updates
-    enable_automatic_updates
-    check_ssh_protocol_version
-    set_ssh_protocol_version
-    check_sysctl_configurations
-    apply_sysctl_configurations
-    check_antivirus_software
-    install_antivirus_software
-    check_system_integrity_monitoring
-    install_system_integrity_monitoring
-    # check_tmp_partition
-    # configure_tmp_partition
-    # check_var_partition
-    # configure_var_partition
-    # check_var_tmp_partition
-    # configure_var_tmp_partition
-    # check_var_tmp_partition_options
-    # configure_var_tmp_partition_options
-    # check_var_log_partition_options
-    # configure_var_log_partition_options
-    # check_var_log_audit_partition_options
-    # configure_var_log_audit_partition_options
-    configure_rsyslog_permissions
-    set_cron_permissions
-    restrict_su_command
-    configure_ssh_settings
-    set_sshd_config_permissions
-    configure_sudo_log_file
-    configure_password_policies
-    configure_file_permissions
+    # check_ssh_root_login
+    # implement_ssh_root_login
+    # check_unnecessary_accounts
+    # remove_unnecessary_accounts
+    # check_password_expiration_policy
+    # implement_password_expiration_policy
+    # check_ungrouped_files
+    # fix_ungrouped_files
+    # check_unowned_files
+    # fix_unowned_files
+    # check_world_writable_files
+    # fix_world_writable_files
+    # check_audit_events
+    # enable_audit_events
+    # check_unnecessary_services
+    # disable_unnecessary_services
+    # check_shadow_file_permissions
+    # set_shadow_file_permissions
+    # check_system_patches
+    # update_system_patches
+    # check_noexec_on_tmp
+    # set_noexec_on_tmp
+    # check_firewall_configuration
+    # configure_firewall
+    # check_selinux_status
+    # set_selinux_enforcing
+    # check_plex_permissions_ownership
+    # secure_plex_permissions_ownership
+    # check_automatic_updates
+    # enable_automatic_updates
+    # check_ssh_protocol_version
+    # set_ssh_protocol_version
+    # check_sysctl_configurations
+    # apply_sysctl_configurations
+    # check_antivirus_software
+    # install_antivirus_software
+    # check_system_integrity_monitoring
+    # install_system_integrity_monitoring
+    # # check_tmp_partition
+    # # configure_tmp_partition
+    # # check_var_partition
+    # # configure_var_partition
+    # # check_var_tmp_partition
+    # # configure_var_tmp_partition
+    # # check_var_tmp_partition_options
+    # # configure_var_tmp_partition_options
+    # # check_var_log_partition_options
+    # # configure_var_log_partition_options
+    # # check_var_log_audit_partition_options
+    # # configure_var_log_audit_partition_options
+    # configure_rsyslog_permissions
+    # set_cron_permissions
+    # restrict_su_command
+    # configure_ssh_settings
+    # set_sshd_config_permissions
+    # configure_sudo_log_file
+    # configure_password_policies
+    # configure_file_permissions
 
 }
 
