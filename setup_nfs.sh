@@ -1,47 +1,47 @@
 #!/bin/bash
 
-# Default values
-nfs_server="192.168.5.2"
-nfs_mount_point="/Volume02/nfs"
-
-# Function to display script usage
-usage() {
-  echo "Usage: $0 [-s NFS_SERVER] [-m NFS_MOUNT_POINT]" 1>&2
-  exit 1
+# Function to install NFS packages based on the system's package manager
+install_nfs_packages() {
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y nfs-common
+    elif command -v yum &> /dev/null; then
+        sudo yum install -y nfs-utils
+    else
+        echo "Unsupported package manager. Please install the NFS client manually."
+        exit 1
+    fi
 }
 
-# Parse command line options
-while getopts ":s:m:" opt; do
-  case $opt in
-    s)
-      nfs_server="$OPTARG"
-      ;;
-    m)
-      nfs_mount_point="$OPTARG"
-      ;;
-    \?)
-      echo "Invalid option: -$OPTARG" >&2
-      usage
-      ;;
-    :)
-      echo "Option -$OPTARG requires an argument." >&2
-      usage
-      ;;
-  esac
-done
+# Default NFS server and location
+NFS_SERVER="192.168.5.2"
+NFS_LOCATION="/volume2/nfs"
 
-# Install NFS client if not already installed
-if ! command -v nfs-client; then
-  sudo apt-get update
-  sudo apt-get install -y nfs-client
+# Default local mount point
+MOUNT_POINT="/mnt"
+
+# Allow overrides
+if [ $# -ge 1 ]; then
+    NFS_SERVER=$1
 fi
 
-# Create mount point if it doesn't exist
-if [ ! -d "$nfs_mount_point" ]; then
-  sudo mkdir -p "$nfs_mount_point"
+if [ $# -ge 2 ]; then
+    NFS_LOCATION=$2
 fi
 
-# Mount the NFS share
-sudo mount -o vers=3,nolock,proto=tcp "$nfs_server":/exported/path "$nfs_mount_point"
+# Check if the mount point exists, create it if not
+if [ ! -d "$MOUNT_POINT" ]; then
+    mkdir -p "$MOUNT_POINT"
+fi
 
-echo "NFS share mounted at: $nfs_mount_point"
+# Install NFS packages
+install_nfs_packages
+
+# Mount the NFS drive
+sudo mount -t nfs -o vers=3,nolock,noatime "$NFS_SERVER:$NFS_LOCATION" "$MOUNT_POINT"
+
+# Check if the mount was successful
+if [ $? -eq 0 ]; then
+    echo "NFS drive mounted successfully at $MOUNT_POINT"
+else
+    echo "Failed to mount NFS drive"
+fi
