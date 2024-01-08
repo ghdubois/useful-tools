@@ -16,10 +16,6 @@ install_nfs_packages() {
 NFS_SERVER="192.168.5.2"
 NFS_LOCATION="/volume2/nfs"
 
-# make mntpoint
-
-mkdir /mnt/nfs > /dev/null
-
 # Default local mount point
 MOUNT_POINT="/mnt/nfs"
 
@@ -46,6 +42,10 @@ sudo mount -t nfs -o vers=3,nolock,noatime "$NFS_SERVER:$NFS_LOCATION" "$MOUNT_P
 # Check if the mount was successful
 if [ $? -eq 0 ]; then
     echo "NFS drive mounted successfully at $MOUNT_POINT"
+
+    # Add entry to /etc/fstab for permanent mount
+    echo "$NFS_SERVER:$NFS_LOCATION $MOUNT_POINT nfs vers=3,nolock,noatime 0 0" | sudo tee -a /etc/fstab > /dev/null
+    echo "Entry added to /etc/fstab for permanent mount"
 else
     echo "Failed to mount NFS drive"
 fi
