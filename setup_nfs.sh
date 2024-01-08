@@ -16,8 +16,12 @@ install_nfs_packages() {
 NFS_SERVER="192.168.5.2"
 NFS_LOCATION="/volume2/nfs"
 
+# make mntpoint
+
+mkdir /mnt/nfs > /dev/null
+
 # Default local mount point
-MOUNT_POINT="/mnt"
+MOUNT_POINT="/mnt/nfs"
 
 # Allow overrides
 if [ $# -ge 1 ]; then
