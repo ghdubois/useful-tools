@@ -1,8 +1,19 @@
 #!/bin/bash
 
 # Define the script path and the git repository directory
-script_path="/root/useful-tools/get_custom_dns.sh"
 repo_dir="/root/useful-tools/"
+
+# Custom script and interval
+custom_script=$1
+custom_interval=$2
+
+# Default values if not provided
+default_script="/root/useful-tools/get_custom_dns.sh"
+default_interval="*/15 * * * *"  # Every 15 minutes
+
+# Use default values if custom values are not provided
+script_path=${custom_script:-$default_script}
+interval=${custom_interval:-$default_interval}
 
 # Check if the script exists
 if [ ! -f "$script_path" ]; then
@@ -25,14 +36,14 @@ chmod +x "$script_path"
 
 # Check if the cron job already exists
 if crontab -l | grep -q "$script_path"; then
-    echo "Cron job already exists."
+    echo "Cron job for $script_path already exists."
     exit 0
 fi
 
 # Add the new cron job
-(crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
+(crontab -l 2>/dev/null; echo "$interval $script_path") | crontab -
 
-echo "Cron job set to run $script_path every 30 minutes."
+echo "Cron job set to run $script_path at interval: $interval."
 
 
 
@@ -44,17 +55,13 @@ echo "Cron job set to run $script_path every 30 minutes."
 # repo_dir="/root/useful-tools/"
 
 # # Check if the script exists
-# if [ -f "$script_path" ]; then
-#     chmod +x "$script_path"
-# else
+# if [ ! -f "$script_path" ]; then
 #     echo "Script $script_path not found. Attempting to update repository."
 
 #     # Change to the repository directory and attempt to pull updates
 #     if cd "$repo_dir"; then
 #         git pull
-#         if [ -f "$script_path" ]; then
-#             chmod +x "$script_path"
-#         else
+#         if [ ! -f "$script_path" ]; then
 #             echo "Error: Script still not found after updating repository."
 #             exit 1
 #         fi
@@ -64,25 +71,18 @@ echo "Cron job set to run $script_path every 30 minutes."
 #     fi
 # fi
 
-# # Check if the root user has a crontab; if not, create one
-# if ! crontab -l 2>/dev/null; then
-#     echo "No crontab for root. Creating one."
-# fi
+# chmod +x "$script_path"
 
-# # Backup existing crontab
-# crontab -l > mycron 2>/dev/null || echo -n "" > mycron
+# # Check if the cron job already exists
+# if crontab -l | grep -q "$script_path"; then
+#     echo "Cron job already exists."
+#     exit 0
+# fi
 
 # # Add the new cron job
-# echo "*/30 * * * * $script_path" >> mycron
+# (crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
 
-# # Install the new cron file
-# crontab mycron
-# if [ $? -eq 0 ]; then
-#     echo "Cron job set to run $script_path every 30 minutes."
-# else
-#     echo "Failed to set cron job."
-#     exit 1
-# fi
+# echo "Cron job set to run $script_path every 30 minutes."
 
-# # Remove the temporary file
-# rm mycron
+# # # Remove the temporary file
+# # rm mycron
