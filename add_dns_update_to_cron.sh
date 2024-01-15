@@ -9,7 +9,7 @@ custom_interval=$2
 
 # Default values if not provided
 default_script="/root/useful-tools/get_custom_dns.sh"
-default_interval="*/15 * * * *"  # Every 15 minutes
+default_interval="*/5 * * * *"  # Every 5 minutes
 
 # Use default values if custom values are not provided
 script_path=${custom_script:-$default_script}
