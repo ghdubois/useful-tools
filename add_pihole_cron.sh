@@ -1,37 +1,58 @@
 #!/bin/bash
 
-# Define the command to add to the cron tab
+# Define the commands
 COMMAND1="pihole -g"
 COMMAND2="pihole -up"
-# Get the current user's crontab and save it to a temporary file
-crontab -l > temp_crontab
 
-# Check if the command is already present in the cron tab
-if grep -qF "$COMMAND1" temp_crontab; then
-    echo "The command '$COMMAND1' is already in the cron tab."
-else
-    # Append the new command to the temporary crontab file
-    echo "@daily $COMMAND1" >> temp_crontab
+# Function to add a command to the crontab
+add_to_crontab() {
+    local command=$1
+    crontab -l > temp_crontab
+    if ! grep -qF "$command" temp_crontab; then
+        echo "@daily $command" >> temp_crontab
+        crontab temp_crontab
+        echo "The command '$command' has been added to the cron tab."
+    else
+        echo "The command '$command' is already in the cron tab."
+    fi
+    rm temp_crontab
+}
 
-    # Install the updated crontab from the temporary file
-    crontab temp_crontab
+# Function to remove a command from the crontab
+remove_from_crontab() {
+    local command=$1
+    crontab -l > temp_crontab
+    if grep -qF "$command" temp_crontab; then
+        sed -i "/$command/d" temp_crontab
+        crontab temp_crontab
+        echo "The command '$command' has been removed from the cron tab."
+    else
+        echo "The command '$command' was not found in the cron tab."
+    fi
+    rm temp_crontab
+}
 
-    echo "The command '$COMMAND1' has been added to the cron tab."
-fi
-
-
-# Check if the command2 is already present in the cron tab
-if grep -qF "$COMMAND2" temp_crontab; then
-    echo "The command '$COMMAND2' is already in the cron tab."
-else
-    # Append the new command to the temporary crontab file
-    echo "@daily $COMMAND2" >> temp_crontab
-
-    # Install the updated crontab from the temporary file
-    crontab temp_crontab
-
-    echo "The command '$COMMAND2' has been added to the cron tab."
-fi
-
-# Remove the temporary crontab file
-rm temp_crontab
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -a1)
+            add_to_crontab "$COMMAND1"
+            shift
+            ;;
+        -a2)
+            add_to_crontab "$COMMAND2"
+            shift
+            ;;
+        -r1)
+            remove_from_crontab "$COMMAND1"
+            shift
+            ;;
+        -r2)
+            remove_from_crontab "$COMMAND2"
+            shift
+            ;;
+        *)
+            echo "Invalid argument: $1"
+            exit 1
+    esac
+done
