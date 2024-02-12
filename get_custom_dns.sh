@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # This URL will depend on your chosen method
-FILE_URL="https://192.168.5.2/dns/custom.list"
+# FILE_URL="https://192.168.5.2/dns/custom.list"
+FILE_URL="https://192.168.5.2/dns/custom_dns.txt"
+
 LOCAL_FILE="/etc/pihole/custom.list"
 
 # Fetch the file
